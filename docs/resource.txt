@@ -1,0 +1,25 @@
+New to YouCam API? Get up and running in under 30 minutes with these resources. Whether you're making your first API call or picking the right endpoint for your project, these guides will fast-track your understanding of the platform.
+
+ 
+
+Quick Start in 3 Steps:
+Register on Devpost. Get your exclusive redeem code by email (2 minutes)
+Sign up for YouCam API. Click here to sign up and verify your email. (2 minutes)
+Claim Your Free 1,000 YouCam API Units. Click here and go to Account > Redeem Code > Enter the redeem code (3 minutes)
+1,000 API Units will be added to your account immediately.
+Pick an API, review the project ideas below, and start building. You can have your first request running in about 30 minutes.
+
+ 
+
+API Type: Standard RESTful API
+Works with websites, e-commerce platforms, iOS/Android apps, and mini-programs. No special SDK required.
+
+ 
+
+Essential Documentation:
+Resource	Description
+YouCam API Overview	Platform overview, full API suite, and what you can build.
+API Console & Sign-up	Create your account, manage your key, and check your unit balance.
+First API Call	Log in and set up your API key and make your first request.
+API Playground	Test endpoints and preview results before you write a single line of code.
+API Documentation	Browse endpoint references, parameters, and code samples for every API in the suite.
