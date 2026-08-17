@@ -2,14 +2,16 @@ import type { Look } from "@/types/youcam";
 
 interface LookCardProps {
   look: Look;
+  /** Called with the picked colorway's full render when the user clicks a swatch thumbnail. Purely a local state update — no API call, since colorwayRenders is already pre-fetched. */
+  onColorwaySelect?: (next: Look) => void;
 }
 
 function sentenceCase(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export default function LookCard({ look }: LookCardProps) {
-  const { garment, renderedImageUrl, rationale, matchReasons, matchPercent } = look;
+export default function LookCard({ look, onColorwaySelect }: LookCardProps) {
+  const { garment, renderedImageUrl, rationale, matchReasons, matchPercent, colorwayRenders } = look;
   const reasons = matchReasons.length > 0 ? matchReasons : [rationale];
 
   return (
@@ -25,6 +27,32 @@ export default function LookCard({ look }: LookCardProps) {
             <h3 className="text-lg font-extrabold leading-tight text-ink">{garment.name}</h3>
           </div>
         </div>
+
+        {colorwayRenders && colorwayRenders.length > 1 && (
+          <div>
+            <span className="text-xs uppercase tracking-wide text-muted">Color — rendered on your photo</span>
+            <div className="mt-1.5 flex gap-1.5">
+              {colorwayRenders.map((cw) => {
+                const active = cw.garment.id === garment.id;
+                return (
+                  <button
+                    key={cw.garment.id}
+                    type="button"
+                    onClick={() => !active && onColorwaySelect?.({ ...look, garment: cw.garment, renderedImageUrl: cw.renderedImageUrl })}
+                    aria-label={cw.garment.name}
+                    aria-pressed={active}
+                    className={`h-10 w-10 shrink-0 overflow-hidden border transition ${
+                      active ? "border-2 border-accent" : "border-ink hover:border-accent"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={cw.renderedImageUrl} alt="" className="h-full w-full object-cover" aria-hidden />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-ink/15 pt-3">
           <span className="text-xs uppercase tracking-wide text-muted">Why it works for you</span>

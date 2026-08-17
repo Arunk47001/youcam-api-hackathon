@@ -22,7 +22,8 @@ export async function generateRationale(
   return templatedRationale(garment, matchReasons, occasion);
 }
 
-function templatedRationale(garment: Garment, matchReasons: string[], occasion: Occasion): string {
+/** Exported for the client-side "see an example" instant demo (no network/LLM call). */
+export function templatedRationale(garment: Garment, matchReasons: string[], occasion: Occasion): string {
   const reasonClause = matchReasons.length > 0 ? matchReasons.join(", and ") : "a versatile fit for your look";
   return `The ${garment.name.toLowerCase()} is a strong pick for ${occasionPhrase(occasion)} — ${reasonClause}.`;
 }

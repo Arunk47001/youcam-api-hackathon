@@ -1,5 +1,7 @@
 import AdmZip from "adm-zip";
 import { MOCK_YOUCAM, createTask, pollTask, uploadFile, type UploadableFile } from "./client";
+import { runSkinToneAnalysis } from "./skinToneAnalysis";
+import { runFaceAttrAnalysis } from "./faceAttrAnalysis";
 import { pickMockProfile } from "@/lib/mock/skinAnalysis.mock";
 import type { SkinConcern, SkinProfile } from "@/types/youcam";
 
@@ -32,12 +34,22 @@ export async function runSkinAnalysis(photo: UploadableFile): Promise<SkinProfil
     dst_actions: [...CONCERN_ACTIONS],
   });
 
-  // Observed >45s on a live account for a pathological (faceless) test
-  // image before the API's own retry/DLQ logic gave up, so a generous
-  // margin is used for real photos too.
-  const polled = await pollTask("skin-analysis", taskId, { timeoutMs: 60_000 });
+  // Real tone/face-shape data (see skinToneAnalysis.ts / faceAttrAnalysis.ts)
+  // runs in parallel against the same uploaded file_id — both soft-fail to
+  // null rather than aborting the whole analysis, since they're enrichments
+  // on top of the core skin-concern result, not required for it.
+  const [polled, toneResult, faceShape] = await Promise.all([
+    // Observed >45s on a live account for a pathological (faceless) test
+    // image before the API's own retry/DLQ logic gave up, so a generous
+    // margin is used for real photos too.
+    pollTask("skin-analysis", taskId, { timeoutMs: 60_000 }),
+    MOCK_YOUCAM ? Promise.resolve(null) : runSkinToneAnalysis(fileId),
+    MOCK_YOUCAM ? Promise.resolve(null) : runFaceAttrAnalysis(fileId),
+  ]);
   if (process.env.YOUCAM_DEBUG === "1") {
     console.log("[skin-analysis raw poll result]", JSON.stringify(polled, null, 2));
+    console.log("[skin-tone-analysis result]", toneResult);
+    console.log("[face-attr-analysis result]", faceShape);
   }
 
   if (MOCK_YOUCAM) {
@@ -45,7 +57,12 @@ export async function runSkinAnalysis(photo: UploadableFile): Promise<SkinProfil
     return { ...pickMockProfile(seed), sourceFileId: fileId };
   }
 
-  return mapRawResultToProfile(polled, fileId);
+  const profile = await mapRawResultToProfile(polled, fileId);
+  return {
+    ...profile,
+    ...(toneResult ? { toneBucket: toneResult.toneBucket, undertone: toneResult.undertone } : {}),
+    ...(faceShape ? { faceShape } : {}),
+  };
 }
 
 /**

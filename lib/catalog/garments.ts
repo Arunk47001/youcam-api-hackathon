@@ -9,6 +9,14 @@ import type { Garment } from "@/types/youcam";
  * on-model render (a flat solid-color swatch is not — it fails with
  * "Output too similar to source"). Real product photography will still
  * look better — swap `imageUrl` before a final demo if time allows.
+ *
+ * Colorways (e.g. sunset-silk-blouse / sunset-silk-blouse-navy /
+ * sunset-silk-blouse-sage) are separate catalog entries with the same
+ * silhouette, not a runtime color-swap — confirmed against a live account
+ * that the `cloth` task has no color-override parameter (tested 5 plausible
+ * field names in one request; output matched the reference image's color
+ * regardless). This is the only reliable way to offer color choice with
+ * the confirmed API.
  */
 export const GARMENTS: Garment[] = [
   {
@@ -17,10 +25,35 @@ export const GARMENTS: Garment[] = [
     category: "top",
     colorFamily: "earth",
     hexSwatch: "#D97C4A",
+    colorwayGroup: "sunset-silk-blouse",
     undertoneFit: ["warm", "neutral"],
     occasion: ["work", "date-night"],
     imageUrl: "/garments/sunset-silk-blouse.png",
     description: "A warm terracotta silk blouse with a soft draped neckline.",
+  },
+  {
+    id: "sunset-silk-blouse-navy",
+    name: "Navy Silk Blouse",
+    category: "top",
+    colorFamily: "jewel",
+    hexSwatch: "#1E3A5F",
+    colorwayGroup: "sunset-silk-blouse",
+    undertoneFit: ["cool", "neutral"],
+    occasion: ["work", "date-night"],
+    imageUrl: "/garments/sunset-silk-blouse-navy.png",
+    description: "The same silk blouse cut in a deep navy colorway.",
+  },
+  {
+    id: "sunset-silk-blouse-sage",
+    name: "Sage Silk Blouse",
+    category: "top",
+    colorFamily: "earth",
+    hexSwatch: "#7C8B6E",
+    colorwayGroup: "sunset-silk-blouse",
+    undertoneFit: ["warm", "neutral"],
+    occasion: ["work", "date-night"],
+    imageUrl: "/garments/sunset-silk-blouse-sage.png",
+    description: "The same silk blouse cut in a muted sage colorway.",
   },
   {
     id: "sapphire-wrap-dress",
@@ -28,10 +61,38 @@ export const GARMENTS: Garment[] = [
     category: "dress",
     colorFamily: "jewel",
     hexSwatch: "#2A4D8F",
+    colorwayGroup: "sapphire-wrap-dress",
     undertoneFit: ["cool", "neutral"],
     occasion: ["event", "date-night"],
     imageUrl: "/garments/sapphire-wrap-dress.png",
     description: "A deep sapphire wrap dress with a flattering waist tie.",
+  },
+  {
+    // Same cut as sapphire-wrap-dress, different colorway — see the note at
+    // the top of this file on how/why colorways are separate catalog
+    // entries rather than a runtime color-swap.
+    id: "sapphire-wrap-dress-wine",
+    name: "Wine Wrap Dress",
+    category: "dress",
+    colorFamily: "bold",
+    hexSwatch: "#6B1E3C",
+    colorwayGroup: "sapphire-wrap-dress",
+    undertoneFit: ["warm", "neutral"],
+    occasion: ["event", "date-night"],
+    imageUrl: "/garments/sapphire-wrap-dress-wine.png",
+    description: "The same wrap-dress cut in a deep wine colorway.",
+  },
+  {
+    id: "sapphire-wrap-dress-ivory",
+    name: "Ivory Wrap Dress",
+    category: "dress",
+    colorFamily: "neutral",
+    hexSwatch: "#EDE6DA",
+    colorwayGroup: "sapphire-wrap-dress",
+    undertoneFit: ["warm", "cool", "neutral"],
+    occasion: ["event", "date-night"],
+    imageUrl: "/garments/sapphire-wrap-dress-ivory.png",
+    description: "The same wrap-dress cut in a soft ivory colorway.",
   },
   {
     id: "ivory-tailored-blazer",
@@ -83,10 +144,35 @@ export const GARMENTS: Garment[] = [
     category: "outerwear",
     colorFamily: "neutral",
     hexSwatch: "#3B3A3E",
+    colorwayGroup: "charcoal-wool-coat",
     undertoneFit: ["warm", "cool", "neutral"],
     occasion: ["work", "casual"],
     imageUrl: "/garments/charcoal-wool-coat.png",
     description: "A structured charcoal wool coat for cooler days.",
+  },
+  {
+    id: "charcoal-wool-coat-camel",
+    name: "Camel Wool Coat",
+    category: "outerwear",
+    colorFamily: "earth",
+    hexSwatch: "#B08968",
+    colorwayGroup: "charcoal-wool-coat",
+    undertoneFit: ["warm", "neutral"],
+    occasion: ["work", "casual"],
+    imageUrl: "/garments/charcoal-wool-coat-camel.png",
+    description: "The same tailored coat in a classic camel colorway.",
+  },
+  {
+    id: "charcoal-wool-coat-ivory",
+    name: "Ivory Wool Coat",
+    category: "outerwear",
+    colorFamily: "neutral",
+    hexSwatch: "#E8DFCF",
+    colorwayGroup: "charcoal-wool-coat",
+    undertoneFit: ["warm", "cool", "neutral"],
+    occasion: ["work", "casual"],
+    imageUrl: "/garments/charcoal-wool-coat-ivory.png",
+    description: "The same tailored coat in a soft ivory colorway.",
   },
   {
     id: "marigold-sundress",

@@ -27,10 +27,15 @@ const CONCERN_COMPLEMENT: Record<string, ColorFamily[]> = {
  * Ranks the catalog for a given skin profile + occasion, and returns the
  * top `count` picks spread across distinct garment categories so the three
  * looks presented to the user don't repeat (e.g. not three tops).
+ *
+ * `excludeIds` skips garments already shown (used by "see more looks" so a
+ * second batch doesn't repeat the first).
  */
-export function pickLooks(profile: SkinProfile, occasion: Occasion, count = 3): ScoredPick[] {
-  const candidates = GARMENTS.filter((g) => g.occasion.includes(occasion));
-  const pool = candidates.length > 0 ? candidates : GARMENTS;
+export function pickLooks(profile: SkinProfile, occasion: Occasion, count = 3, excludeIds: string[] = []): ScoredPick[] {
+  const excluded = new Set(excludeIds);
+  const available = GARMENTS.filter((g) => !excluded.has(g.id));
+  const candidates = available.filter((g) => g.occasion.includes(occasion));
+  const pool = candidates.length > 0 ? candidates : available;
 
   const scored = pool
     .map((garment) => scoreGarment(garment, profile, occasion))
@@ -57,7 +62,8 @@ export function pickLooks(profile: SkinProfile, occasion: Occasion, count = 3): 
   return picks.slice(0, count);
 }
 
-function scoreGarment(garment: Garment, profile: SkinProfile, occasion: Occasion): ScoredPick {
+/** Exported for /api/recolor — scoring a single specific garment (a colorway swap) reuses the same logic as ranking the whole catalog. */
+export function scoreGarment(garment: Garment, profile: SkinProfile, occasion: Occasion): ScoredPick {
   let score = 0;
   const matchReasons: string[] = [];
 

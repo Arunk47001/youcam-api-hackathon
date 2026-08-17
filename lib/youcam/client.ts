@@ -30,7 +30,7 @@
 
 import { constants as cryptoConstants, publicEncrypt } from "node:crypto";
 
-export type YouCamTaskKind = "skin-analysis" | "apparel-vto";
+export type YouCamTaskKind = "skin-analysis" | "apparel-vto" | "skin-tone-analysis" | "face-attr-analysis";
 
 export const MOCK_YOUCAM = process.env.MOCK_YOUCAM === "1";
 
@@ -51,6 +51,18 @@ const ENDPOINTS: Record<YouCamTaskKind, { uploadPath: string; taskPath: string; 
     uploadPath: "/file/cloth",
     taskPath: "/task/cloth",
     pollPath: (taskId) => `/task/cloth/${taskId}`,
+  },
+  // Confirmed against a live account: a file_id uploaded via /file/skin-analysis
+  // works directly for these two task types too — no separate upload needed.
+  "skin-tone-analysis": {
+    uploadPath: "/file/skin-analysis",
+    taskPath: "/task/skin-tone-analysis",
+    pollPath: (taskId) => `/task/skin-tone-analysis/${taskId}`,
+  },
+  "face-attr-analysis": {
+    uploadPath: "/file/skin-analysis",
+    taskPath: "/task/face-attr-analysis",
+    pollPath: (taskId) => `/task/face-attr-analysis/${taskId}`,
   },
 };
 

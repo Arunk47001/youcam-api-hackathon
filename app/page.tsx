@@ -9,6 +9,7 @@ import AnalysisSummary from "@/components/AnalysisSummary";
 import LookCard from "@/components/LookCard";
 import HeroGraphic from "@/components/HeroGraphic";
 import TrustStats from "@/components/TrustStats";
+import { buildInstantDemo } from "@/lib/agent/instantDemo";
 import type { Look, Occasion, SkinProfile } from "@/types/youcam";
 
 type Stage = "collecting" | "analyzing" | "styling" | "done" | "error";
@@ -21,6 +22,12 @@ const STEP_LABEL: Record<Stage, string> = {
   done: "Step 2 of 2",
 };
 
+const EXAMPLE_OCCASIONS: { value: Occasion; label: string }[] = [
+  { value: "work", label: "Work" },
+  { value: "date-night", label: "Date Night" },
+  { value: "casual", label: "Casual" },
+];
+
 export default function HomePage() {
   const [stage, setStage] = useState<Stage>("collecting");
   const [photo, setPhoto] = useState<File | null>(null);
@@ -29,6 +36,9 @@ export default function HomePage() {
   const [profile, setProfile] = useState<SkinProfile | null>(null);
   const [looks, setLooks] = useState<Look[] | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isExample, setIsExample] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [noMoreLooks, setNoMoreLooks] = useState(false);
 
   const canSubmit = photo !== null && occasion !== null && consent;
 
@@ -40,11 +50,26 @@ export default function HomePage() {
     setProfile(null);
     setLooks(null);
     setErrorMessage(null);
+    setIsExample(false);
+    setNoMoreLooks(false);
+  }
+
+  function handleSeeExample(exampleOccasion: Occasion) {
+    const demo = buildInstantDemo(exampleOccasion);
+    setOccasion(exampleOccasion);
+    setProfile(demo.profile);
+    setLooks(demo.looks);
+    setIsExample(true);
+    setNoMoreLooks(false);
+    setErrorMessage(null);
+    setStage("done");
   }
 
   async function handleSubmit() {
     if (!photo || !occasion) return;
     setErrorMessage(null);
+    setIsExample(false);
+    setNoMoreLooks(false);
 
     try {
       setStage("analyzing");
@@ -74,6 +99,43 @@ export default function HomePage() {
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong.");
       setStage("error");
     }
+  }
+
+  async function handleSeeMore() {
+    if (!photo || !occasion || !looks) return;
+    setLoadingMore(true);
+    try {
+      const styleForm = new FormData();
+      styleForm.set("photo", photo);
+      styleForm.set("occasion", occasion);
+      styleForm.set("profile", JSON.stringify(profile));
+      styleForm.set("excludeIds", JSON.stringify(looks.map((l) => l.garment.id)));
+      const styleResp = await fetch("/api/style", { method: "POST", body: styleForm });
+      const styleData = await styleResp.json();
+      if (!styleResp.ok) throw new Error(styleData.error ?? "Couldn't load more looks.");
+      const moreLooks: Look[] = styleData.looks ?? [];
+      if (moreLooks.length === 0) {
+        setNoMoreLooks(true);
+      } else {
+        setLooks([...looks, ...moreLooks]);
+        if (moreLooks.length < 3) setNoMoreLooks(true);
+      }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Couldn't load more looks.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  // Every colorway option is already pre-rendered as part of the look (see
+  // Look.colorwayRenders and the note in app/api/style/route.ts), so
+  // picking a different swatch is just a local state swap — no API call,
+  // no loading state.
+  function handleColorwaySelect(index: number, next: Look) {
+    if (!looks) return;
+    const updated = [...looks];
+    updated[index] = next;
+    setLooks(updated);
   }
 
   return (
@@ -127,6 +189,24 @@ export default function HomePage() {
                   <span aria-hidden>&rarr;</span>
                 </button>
               </div>
+
+              <div className="border-t border-ink pt-6">
+                <span className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                  Don&apos;t want to upload yet? See an example first
+                </span>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {EXAMPLE_OCCASIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleSeeExample(opt.value)}
+                      className="border border-ink bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-ink transition hover:bg-paper"
+                    >
+                      {opt.label} example
+                    </button>
+                  ))}
+                </div>
+              </div>
             </section>
 
             <HeroGraphic />
@@ -148,27 +228,52 @@ export default function HomePage() {
                   Step 2 of 2 — Your Looks
                 </span>
                 <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">
-                  Three looks, matched to you.
+                  {isExample ? "Here's an example." : "Three looks, matched to you."}
                 </h1>
+                {isExample && (
+                  <p className="mt-2 inline-block border border-ink bg-panel px-3 py-1 text-xs font-bold uppercase tracking-wide text-muted">
+                    Example only — not your photo or a real analysis
+                  </p>
+                )}
               </div>
 
               <AnalysisSummary profile={profile} />
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                {looks.map((look) => (
-                  <LookCard key={look.garment.id} look={look} />
+                {looks.map((look, i) => (
+                  <LookCard
+                    key={`${look.garment.id}-${i}`}
+                    look={look}
+                    onColorwaySelect={(next) => handleColorwaySelect(i, next)}
+                  />
                 ))}
               </div>
 
-              <div className="flex items-center justify-between border-t border-ink pt-6">
-                <span className="text-xs text-muted">Want a different occasion or photo?</span>
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="border border-ink bg-white px-6 py-3 text-xs font-extrabold uppercase tracking-wide text-ink transition hover:bg-paper"
-                >
-                  Start over
-                </button>
+              {errorMessage && <p className="text-xs font-bold text-accent">{errorMessage}</p>}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink pt-6">
+                <span className="text-xs text-muted">
+                  {isExample ? "Ready to try it with your own photo?" : "Want a different occasion or photo?"}
+                </span>
+                <div className="flex flex-wrap gap-3">
+                  {!isExample && !noMoreLooks && (
+                    <button
+                      type="button"
+                      onClick={handleSeeMore}
+                      disabled={loadingMore}
+                      className="border border-ink bg-white px-6 py-3 text-xs font-extrabold uppercase tracking-wide text-ink transition hover:bg-paper disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {loadingMore ? "Loading…" : "See 3 more looks"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="border border-ink bg-white px-6 py-3 text-xs font-extrabold uppercase tracking-wide text-ink transition hover:bg-paper"
+                  >
+                    {isExample ? "Upload my photo" : "Start over"}
+                  </button>
+                </div>
               </div>
             </section>
           </div>

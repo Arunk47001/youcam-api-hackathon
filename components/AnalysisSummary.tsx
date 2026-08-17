@@ -28,6 +28,9 @@ export default function AnalysisSummary({ profile }: AnalysisSummaryProps) {
       sub: profile.undertone ? `${profile.undertone} undertone` : undefined,
     });
   }
+  if (profile.faceShape) {
+    cells.push({ label: "Face Shape", value: profile.faceShape });
+  }
 
   return (
     <div className="border border-ink bg-panel">
@@ -36,7 +39,11 @@ export default function AnalysisSummary({ profile }: AnalysisSummaryProps) {
       </div>
 
       {cells.length > 0 && (
-        <div className={`grid grid-cols-1 divide-y divide-ink border-b border-ink sm:divide-y-0 sm:divide-x sm:border-b-0 ${cells.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+        <div
+          className={`grid grid-cols-1 divide-y divide-ink border-b border-ink sm:divide-y-0 sm:divide-x sm:border-b-0 ${
+            cells.length === 2 ? "sm:grid-cols-2" : cells.length >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3"
+          }`}
+        >
           {cells.map((cell) => (
             <div key={cell.label} className="p-5">
               <span className="text-xs uppercase tracking-wide text-muted">{cell.label}</span>
