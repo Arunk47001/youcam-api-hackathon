@@ -1,5 +1,7 @@
 # Glow & Fit Concierge
 
+**Live app:** [glow-fit-concierge.vercel.app](https://glow-fit-concierge.vercel.app)
+
 An agentic styling assistant built for the **YouCam API Skin AI & Apparel VTO Hackathon** (Skin AI + Apparel VTO combined track).
 
 Most beauty and fashion tools treat skin and clothing as two separate features. Glow & Fit Concierge treats them as one decision: upload a selfie, tell it what you're dressing for, and it reads your skin with **YouCam Skin AI**, reasons about which colors and styles actually complement your tone and concerns, and renders three complete looks on you with **YouCam Apparel VTO** — each with a plain-language explanation of *why* it works.
@@ -97,7 +99,7 @@ Uploaded photos are only ever passed through to the YouCam API to fulfill the re
 - [ ] Confirm the `outerwear → upper_body` category mapping is right (only `top`/`dress` categories have been real-tested)
 - [ ] Check remaining API unit balance before further real-mode testing
 - [ ] Replace placeholder garment SVGs with real product photography (confirmed: silhouette shapes render, but real photos will look better)
-- [ ] Deploy a publicly reachable instance (or prepare local test instructions) for judges
+- [x] Deploy a publicly reachable instance (or prepare local test instructions) for judges — live at [glow-fit-concierge.vercel.app](https://glow-fit-concierge.vercel.app)
 - [ ] Screenshots
 - [ ] 1–3 minute demo video (YouTube/Vimeo/Youku), explaining which YouCam APIs are used
 - [ ] Text description of features/functionality/consumer value for the Devpost submission
